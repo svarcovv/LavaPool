@@ -1,0 +1,8 @@
+name: LavaPool
+version: '${version}'
+
+main: dev.svarcovv.lavaPool.LavaPool
+api-version: '1.21.4'
+load: POSTWORLD
+
+authors: [ SvarKa ]
