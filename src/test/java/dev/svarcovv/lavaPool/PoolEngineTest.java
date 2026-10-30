@@ -216,6 +216,30 @@ class PoolEngineTest {
     }
 
     @Test
+    void progressFromAnotherPoolCannotBeUsedForImmediateReward() {
+        PoolEngine engine = engine(settings(true, 0), pool("a", 0, 3, false, 1), pool("b", 20, 1, false, 1));
+        Player player = player("one", 1);
+        engine.add(player);
+        ticks(engine, 60);
+        when(player.getLocation(any(Location.class))).thenAnswer(invocation -> new Location(world, 25, 50, 5));
+        ticks(engine, 20);
+        assertTrue(executed.isEmpty());
+        ticks(engine, 20);
+        assertEquals(1, executed.size());
+    }
+
+    @Test
+    void leavingWaterCancelsCommandsAlreadyInQueue() {
+        PoolEngine engine = engine(settings(true, 0), pool("a", 0, 1, false, 10));
+        Player player = player("one", 1);
+        engine.add(player);
+        ticks(engine, 40);
+        when(player.isInWater()).thenReturn(false);
+        ticks(engine, 1);
+        assertEquals(4, executed.size());
+    }
+
+    @Test
     void closingEngineCancelsAllPendingRewards() {
         PoolEngine engine = engine(settings(true, 0), pool("a", 0, 1, false, 10));
         engine.add(player("one", 1));

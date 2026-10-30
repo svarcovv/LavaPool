@@ -57,7 +57,8 @@ record Pool(String name, boolean premium, String world, int minX, int minY, int 
             throw new IllegalArgumentException("Некорректная награда или множитель");
         }
         List<String> commands = config.getStringList("commandsReward").stream()
-                .map(String::trim).map(s -> s.startsWith("/") ? s.substring(1) : s).toList();
+                .map(String::trim).map(s -> s.startsWith("/") ? s.substring(1) : s)
+                .map(s -> s.replaceAll("(?i)^((?:minecraft:)?give\\s+\\S+\\s+)amethystshard(?=\\s|$)", "$1minecraft:amethyst_shard")).toList();
         if (commands.size() > 100 || commands.stream().anyMatch(s -> s.isBlank() || s.contains("\n") || s.contains("\r"))) {
             throw new IllegalArgumentException("Некорректный список команд награды");
         }

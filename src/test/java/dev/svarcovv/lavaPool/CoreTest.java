@@ -13,6 +13,21 @@ import static org.mockito.Mockito.*;
 
 class CoreTest {
     @Test
+    void legacyAmethystCommandIsFixedWhenOldConfigIsImported() {
+        org.bukkit.configuration.file.YamlConfiguration config = new org.bukkit.configuration.file.YamlConfiguration();
+        config.set("world", "world");
+        for (String point : List.of("pos1", "pos2")) {
+            for (String axis : List.of("x", "y", "z")) {
+                config.set(point + "." + axis, 0);
+            }
+        }
+        config.set("commandsReward", List.of("give %player_name% AmethystShard 3"));
+        assertEquals(List.of("give %player_name% minecraft:amethyst_shard 3"), Pool.read("afk", config).commands());
+        config.set("time", "0s");
+        assertThrows(IllegalArgumentException.class, () -> Pool.read("afk", config));
+    }
+
+    @Test
     void queueStopsAfterTimeBudgetAndNeverDuplicatesPlayer() {
         AtomicLong clock = new AtomicLong();
         AtomicInteger calls = new AtomicInteger();
