@@ -1,0 +1,10 @@
+pauseTimer: true
+premiumEnterAction: denyMessage
+useMultiplier: true
+IPLimit: 3
+broadcastRewards: false
+performance:
+  commandsPerTick: 4
+  rewardBudgetMillis: 2
+  silentRewards: true
+  broadcastCooldownSeconds: 30

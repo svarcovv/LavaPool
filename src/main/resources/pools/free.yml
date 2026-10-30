@@ -1,0 +1,16 @@
+NamePool: free
+type: free
+time: 5m
+world: spawn
+pos1:
+  x: 21.0
+  y: 104.0
+  z: 39.0
+pos2:
+  x: 14.0
+  y: 102.0
+  z: 25.0
+defaultReward: 50
+weekendMultiple: 2
+commandsReward:
+- p give %player_name% 50

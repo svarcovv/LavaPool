@@ -1,8 +1,26 @@
 name: LavaPool
-version: '${version}'
-
+version: '${project.version}'
 main: dev.svarcovv.lavaPool.LavaPool
 api-version: '1.21.4'
-load: POSTWORLD
-
-authors: [ SvarKa ]
+authors: [SvarKa]
+description: Зоны с наградами
+website: https://github.com/svarcovv/LavaPool
+softdepend: [PlaceholderAPI, W1nPool]
+commands:
+  lavapool:
+    description: Управление зонами
+    aliases: [wpool, pool]
+    permission: lavapool.use
+permissions:
+  lavapool.use:
+    default: true
+  lavapool.admin:
+    default: op
+  lavapool.type.premium:
+    default: false
+  w1npool.use:
+    default: true
+  w1npool.admin:
+    default: op
+  w1npool.type.premium:
+    default: false

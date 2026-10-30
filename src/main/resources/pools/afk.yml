@@ -1,0 +1,16 @@
+NamePool: afk
+type: free
+time: 1m
+world: world
+pos1:
+  x: 190.0
+  y: 123.0
+  z: 1154.0
+pos2:
+  x: 237.0
+  y: 130.0
+  z: 1195.0
+defaultReward: 150
+weekendMultiple: 2
+commandsReward:
+- minecraft:give %player_name% minecraft:amethyst_shard 3

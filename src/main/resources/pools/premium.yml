@@ -1,0 +1,17 @@
+NamePool: premium
+type: premium
+time: 15m
+world: spawn
+pos1:
+  x: -9.0
+  y: 103.0
+  z: 55.0
+pos2:
+  x: -4.0
+  y: 110.0
+  z: 63.0
+defaultReward: 200
+weekendMultiple: 3
+commandsReward:
+- p give %player_name% 200
+- w1ncrates give %player_name% tokens 2

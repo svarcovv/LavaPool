@@ -1,0 +1,41 @@
+actionBar: '&fОсталось: &6%timer% &7| &fдо получения &6награды'
+title1: '&6Вы вошли'
+title2: ''
+title3: '&7Вы вышли'
+title4: ''
+noPermission: '&cНедостаточно прав.'
+help: |
+  &6/lavapool wand &7- выделение зоны
+  &6/lavapool create <имя> <free|premium> &7- создать зону
+  &6/lavapool remove <имя> &7- удалить зону
+  &6/lavapool teleport <имя> &7- телепортация
+  &6/lavapool reload &7- обновить настройки
+createUsage: '&7/lavapool create <имя> <free|premium>'
+removeUsage: '&7/lavapool remove <имя>'
+teleportUsage: '&7/lavapool teleport <имя>'
+noSelection: '&7Выделите две точки в одном мире.'
+wandReceived: '&7Селектор выдан.'
+invalidName: '&cИмя зоны: латинские буквы, цифры, _ или -, до 48 символов.'
+poolExists: '&cЗона %name% уже существует.'
+poolCreated: '&7Зона &6%name% &7создана.'
+poolCreateError: '&cНе удалось создать зону.'
+poolRemoved: '&7Зона &6%name% &7удалена.'
+poolRemoveError: '&cНе удалось удалить зону.'
+poolNotFound: '&cЗона %name% не найдена.'
+teleported: '&7Телепортация к зоне &6%name%&7.'
+noSafeLocation: '&cВ зоне %name% нет безопасной точки.'
+premiumDeny: '&7Для этой зоны нужен premium-доступ.'
+ipLimit: '&7Достигнут лимит игроков с одного IP в зонах наград.'
+rewardMessageFree:
+  - ''
+  - ' &6☀ | &fНаграда получена'
+  - ''
+rewardMessagePremium:
+  - ''
+  - ' &6☀ | &fНаграда получена'
+  - ''
+point1Set: '&7Точка 1: &6%x%, %y%, %z%'
+point2Set: '&7Точка 2: &6%x%, %y%, %z%'
+reloadSuccess: '&7Настройки LavaPool обновлены.'
+reloadError: '&cНе удалось обновить настройки: %error%'
+onlyPlayers: '&7Команда только для игроков.'
