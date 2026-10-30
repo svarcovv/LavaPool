@@ -59,6 +59,9 @@ final class PoolEngine {
     void remove(UUID uuid) {
         State state = players.remove(uuid);
         if (state != null) {
+            if (state.active != null) {
+                messages.clearStatus(state.player);
+            }
             release(state);
             buckets.get(state.bucket).remove(uuid);
         }
@@ -67,9 +70,6 @@ final class PoolEngine {
 
     void close() {
         for (State state : List.copyOf(players.values())) {
-            if (state.active != null) {
-                state.player.sendActionBar(Component.empty());
-            }
             remove(state.player.getUniqueId());
         }
     }
@@ -96,7 +96,7 @@ final class PoolEngine {
             remove(player.getUniqueId());
             return;
         }
-        Pool pool = player.isDead() || !player.isInWater() ? null : index.find(player.getLocation(state.location));
+        Pool pool = player.isDead() ? null : index.find(player.getLocation(state.location));
         if (pool != null && !allowed(player, pool)) {
             deny(state, pool);
             pool = null;
@@ -114,7 +114,7 @@ final class PoolEngine {
             if (!reserve(state)) {
                 state.active = null;
                 if (tick >= state.nextNotice) {
-                    messages.send(player, "ipLimit");
+                    messages.notice(player, "ipLimit");
                     state.nextNotice = tick + 200;
                 }
                 return;
@@ -130,7 +130,7 @@ final class PoolEngine {
         }
         long spent = state.progress.getOrDefault(pool.name(), 0L);
         String time = Messages.time((int) Math.max(0, pool.seconds() - spent / 20));
-        player.sendActionBar(messages.text(messages.raw("actionBar").replace("%timer%", time)));
+        messages.status(player, time);
         if (!state.pending && spent / 20 >= pool.seconds() && !pool.commands().isEmpty()) {
             state.pending = true;
             state.progress.put(pool.name(), 0L);
@@ -204,7 +204,7 @@ final class PoolEngine {
             state.player.teleportAsync(state.player.getWorld().getSpawnLocation());
         }
         if (tick >= state.nextNotice && action.contains("denymessage")) {
-            messages.send(state.player, "premiumDeny");
+            messages.notice(state.player, "premiumDeny");
             state.nextNotice = tick + 100;
         }
     }
@@ -234,7 +234,7 @@ final class PoolEngine {
         public boolean step() {
             Player player = state.player;
             if (players.get(player.getUniqueId()) != state || state.active != pool || !player.isOnline()
-                    || player.isDead() || !player.isInWater() || index.find(player.getLocation(state.location)) != pool
+                    || player.isDead() || index.find(player.getLocation(state.location)) != pool
                     || !allowed(player, pool)) {
                 state.pending = false;
                 return true;
@@ -256,15 +256,13 @@ final class PoolEngine {
                         if (broadcast) {
                             nextBroadcast = tick + settings.broadcastCooldownSeconds() * 20L;
                         }
-                        for (String line : messages.rewards(pool)) {
-                            Component message = messages.text(format(line));
-                            if (broadcast) {
-                                for (Player online : plugin.getServer().getOnlinePlayers()) {
-                                    online.sendMessage(message);
-                                }
-                            } else {
-                                player.sendMessage(message);
+                        Component message = messages.line(messages.rewards(pool).stream().map(this::format).toList());
+                        if (broadcast) {
+                            for (Player online : plugin.getServer().getOnlinePlayers()) {
+                                messages.notice(online, "reward", message);
                             }
+                        } else {
+                            messages.notice(player, "reward", message);
                         }
                     }
                     return true;

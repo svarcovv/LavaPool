@@ -1,5 +1,8 @@
 package dev.svarcovv.lavaPool;
 
+import dev.svarcovv.lavaAPI.api.LavaService;
+import dev.svarcovv.lavaAPI.hud.HudService;
+import net.kyori.adventure.text.Component;
 import org.bukkit.Location;
 import org.bukkit.Server;
 import org.bukkit.World;
@@ -28,6 +31,7 @@ class PoolEngineTest {
     private World world;
     private JavaPlugin plugin;
     private Messages messages;
+    private HudService hud;
     private List<String> executed;
     private AtomicInteger checks;
 
@@ -46,7 +50,10 @@ class PoolEngineTest {
         config.set("premiumDeny", "premium denied");
         config.set("ipLimit", "ip limit");
         config.set("rewardMessageFree", List.of("reward"));
-        messages = new Messages(config);
+        LavaService lava = mock(LavaService.class);
+        hud = mock(HudService.class);
+        when(lava.hud()).thenReturn(hud);
+        messages = new Messages(plugin, lava, config);
         executed = new ArrayList<>();
         checks = new AtomicInteger();
         when(server.dispatchCommand(any(), anyString())).thenAnswer(invocation -> {
@@ -72,18 +79,21 @@ class PoolEngineTest {
         when(player.getUniqueId()).thenReturn(UUID.randomUUID());
         when(player.getName()).thenReturn(name);
         when(player.isOnline()).thenReturn(true);
-        when(player.isInWater()).thenReturn(true);
         when(player.getAddress()).thenReturn(new InetSocketAddress("192.0.2." + ip, 25565));
+        location(player, 5);
+        return player;
+    }
+
+    private void location(Player player, int x) {
         when(player.getLocation(any(Location.class))).thenAnswer(invocation -> {
             checks.incrementAndGet();
             Location location = invocation.getArgument(0);
             location.setWorld(world);
-            location.setX(5);
+            location.setX(x);
             location.setY(50);
             location.setZ(5);
             return location;
         });
-        return player;
     }
 
     private PoolEngine engine(Settings settings, Pool... pools) {
@@ -126,9 +136,9 @@ class PoolEngineTest {
         engine.add(player);
         ticks(engine, 60);
         assertTrue(executed.isEmpty());
-        when(player.isInWater()).thenReturn(false);
+        location(player, 100);
         ticks(engine, 40);
-        when(player.isInWater()).thenReturn(true);
+        location(player, 5);
         ticks(engine, 20);
         assertTrue(executed.isEmpty());
         ticks(engine, 20);
@@ -141,9 +151,9 @@ class PoolEngineTest {
         Player player = player("one", 1);
         engine.add(player);
         ticks(engine, 60);
-        when(player.isInWater()).thenReturn(false);
+        location(player, 100);
         ticks(engine, 20);
-        when(player.isInWater()).thenReturn(true);
+        location(player, 5);
         ticks(engine, 60);
         assertTrue(executed.isEmpty());
         ticks(engine, 20);
@@ -175,7 +185,7 @@ class PoolEngineTest {
         engine.add(player);
         ticks(engine, 400);
         assertTrue(executed.isEmpty());
-        verify(player, times(1)).sendMessage(any(net.kyori.adventure.text.Component.class));
+        verify(hud, times(1)).publish(eq(plugin), eq(player), eq("pool:premiumDeny"), any(Component.class), eq(40), eq(2400L));
     }
 
     @Test
@@ -211,7 +221,7 @@ class PoolEngineTest {
         engine.add(player);
         ticks(engine, 400);
         verify(plugin.getLogger(), times(1)).warning(anyString());
-        verify(player, never()).sendMessage(any(net.kyori.adventure.text.Component.class));
+        verify(hud, never()).publish(eq(plugin), eq(player), eq("pool:reward"), any(Component.class), anyInt(), anyLong());
         verify(server, never()).dispatchCommand(any(), eq("reward1 one"));
     }
 
@@ -229,14 +239,27 @@ class PoolEngineTest {
     }
 
     @Test
-    void leavingWaterCancelsCommandsAlreadyInQueue() {
+    void leavingZoneCancelsCommandsAlreadyInQueue() {
         PoolEngine engine = engine(settings(true, 0), pool("a", 0, 1, false, 10));
         Player player = player("one", 1);
         engine.add(player);
         ticks(engine, 40);
-        when(player.isInWater()).thenReturn(false);
+        location(player, 100);
         ticks(engine, 1);
         assertEquals(4, executed.size());
+    }
+
+    @Test
+    void rewardsContinueOnDryGroundWhenPlayerLeavesWater() {
+        PoolEngine engine = engine(settings(true, 0), pool("a", 0, 1, false, 10));
+        Player player = player("one", 1);
+        when(player.isInWater()).thenReturn(true);
+        engine.add(player);
+        ticks(engine, 40);
+        assertEquals(4, executed.size());
+        when(player.isInWater()).thenReturn(false);
+        ticks(engine, 2);
+        assertEquals(10, executed.size());
     }
 
     @Test

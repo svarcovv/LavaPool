@@ -5,6 +5,7 @@ api-version: '1.21.4'
 authors: [SvarKa]
 description: Зоны с наградами
 website: https://github.com/svarcovv/LavaPool
+depend: [LavaAPI]
 softdepend: [PlaceholderAPI, W1nPool]
 commands:
   lavapool:

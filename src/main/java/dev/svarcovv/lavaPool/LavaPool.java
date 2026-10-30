@@ -1,5 +1,6 @@
 package dev.svarcovv.lavaPool;
 
+import dev.svarcovv.lavaAPI.api.LavaService;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
@@ -28,6 +29,7 @@ public final class LavaPool extends JavaPlugin implements Listener {
     private PoolCommands commands;
     private Method placeholderMethod;
     private boolean placeholderWarning;
+    private LavaService lava;
 
     @Override
     public void onEnable() {
@@ -37,6 +39,10 @@ public final class LavaPool extends JavaPlugin implements Listener {
             return;
         }
         try {
+            lava = getServer().getServicesManager().load(LavaService.class);
+            if (lava == null || lava.apiVersion() < 2) {
+                throw new IllegalStateException("Требуется LavaAPI 1.0.3 или новее с API версии 2");
+            }
             prepareFiles();
             if (getServer().getPluginManager().isPluginEnabled("PlaceholderAPI")) {
                 placeholderMethod = Class.forName("me.clip.placeholderapi.PlaceholderAPI")
@@ -86,7 +92,7 @@ public final class LavaPool extends JavaPlugin implements Listener {
                 messageConfig.setDefaults(YamlConfiguration.loadConfiguration(new java.io.InputStreamReader(stream, java.nio.charset.StandardCharsets.UTF_8)));
             }
         }
-        Messages newMessages = new Messages(messageConfig);
+        Messages newMessages = new Messages(this, lava, messageConfig);
         List<Pool> loaded = new ArrayList<>();
         File[] files = new File(getDataFolder(), "pools").listFiles(file -> file.isFile() && file.getName().endsWith(".yml"));
         if (files == null) {

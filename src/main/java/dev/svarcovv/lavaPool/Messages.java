@@ -1,26 +1,31 @@
 package dev.svarcovv.lavaPool;
 
+import dev.svarcovv.lavaAPI.api.LavaService;
+import dev.svarcovv.lavaAPI.hud.HudService;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
-import net.kyori.adventure.title.Title;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.Plugin;
 
-import java.time.Duration;
 import java.util.List;
 
 final class Messages {
     private static final LegacyComponentSerializer COLORS = LegacyComponentSerializer.builder()
             .character('&').hexColors().useUnusualXRepeatedCharacterHexFormat().build();
     private final YamlConfiguration config;
-    private final Title enter;
-    private final Title leave;
+    private final Plugin owner;
+    private final HudService hud;
+    private final Component enter;
+    private final Component leave;
 
-    Messages(YamlConfiguration config) {
+    Messages(Plugin owner, LavaService lava, YamlConfiguration config) {
+        this.owner = owner;
+        this.hud = lava.hud();
         this.config = config;
-        enter = title("title1", "title2");
-        leave = title("title3", "title4");
+        enter = line(List.of(config.getString("title1", ""), config.getString("title2", "")));
+        leave = line(List.of(config.getString("title3", ""), config.getString("title4", "")));
     }
 
     Component text(String text) {
@@ -45,15 +50,42 @@ final class Messages {
     }
 
     void transition(Player player, boolean entering) {
-        player.showTitle(entering ? enter : leave);
         if (!entering) {
-            player.sendActionBar(Component.empty());
+            clearStatus(player);
+        }
+        notice(player, "transition", entering ? enter : leave);
+    }
+
+    void status(Player player, String timer) {
+        hud.publishStatus(owner, player, "pool:timer", text(raw("actionBar").replace("%timer%", timer)), 30, 2500L);
+    }
+
+    void clearStatus(Player player) {
+        hud.withdrawStatus(owner, player, "pool:timer");
+    }
+
+    void notice(Player player, String key) {
+        notice(player, key, text(raw(key)));
+    }
+
+    void notice(Player player, String key, Component text) {
+        if (!text.equals(Component.empty())) {
+            hud.publish(owner, player, "pool:" + key, text, 40, 2400L);
         }
     }
 
-    private Title title(String key, String subtitle) {
-        return Title.title(text(config.getString(key, "")), text(config.getString(subtitle, "")),
-                Title.Times.times(Duration.ofMillis(500), Duration.ofSeconds(2), Duration.ofMillis(500)));
+    Component line(List<String> lines) {
+        Component result = Component.empty();
+        for (String value : lines) {
+            if (value.isBlank()) {
+                continue;
+            }
+            if (!result.equals(Component.empty())) {
+                result = result.append(Component.space());
+            }
+            result = result.append(text(value.strip()));
+        }
+        return result;
     }
 
     static String time(int seconds) {

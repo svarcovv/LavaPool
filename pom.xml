@@ -6,7 +6,7 @@
 
     <groupId>dev.svarcovv</groupId>
     <artifactId>LavaPool</artifactId>
-    <version>1.1.0</version>
+    <version>1.2.0</version>
     <packaging>jar</packaging>
 
     <name>LavaPool</name>
@@ -51,6 +51,12 @@
     </repositories>
 
     <dependencies>
+        <dependency>
+            <groupId>dev.svarcovv</groupId>
+            <artifactId>LavaAPI</artifactId>
+            <version>1.0.3</version>
+            <scope>provided</scope>
+        </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
